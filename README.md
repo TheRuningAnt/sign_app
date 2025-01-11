@@ -1,16 +1,10 @@
-# sign_app
 
-A new Flutter project.
+#打卡记录小工具
 
-## Getting Started
+一个简单的不能再简单的上班打卡记录小工具，纯粹是不想用第三方的软件看乱七八糟的广告或者会员而制作的小工具
+功能很简单，想自定义什么功能拉下来自己改。
 
-This project is a starting point for a Flutter application.
+甚至安卓安装包我都传上去了，直接装就能用，好人哦~
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![iwEcAqNqcGcDAQTRAk4F0QT-BrAIAemYG2KAXgdmZnExOQUAB9MAAAABB7EnYAgACaJpbQoAC9IAAIen jpg_720x720q90](https://github.com/user-attachments/assets/23315a56-c6e4-4998-bd1c-569d63fca13e)
+![iwEcAqNqcGcDAQTRAk4F0QT-BrDmVhgI3WEO9QdmZnGV3fwAB9MAAAABB7EnYAgACaJpbQoAC9IAALIc jpg_720x720q90](https://github.com/user-attachments/assets/02abdce0-b092-4669-9dc1-5a26925d0f9c)
