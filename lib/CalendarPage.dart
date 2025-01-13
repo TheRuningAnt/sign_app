@@ -36,11 +36,7 @@ class _CalendarPageState extends State<CalendarPage> {
             .of(context)
             .colorScheme
             .inversePrimary,
-        title: const Center(
-            child: Padding(
-              padding: EdgeInsets.only(right: 60),
-              child: Text("打卡日历"),
-            )),
+        title: Text("打卡日历"),
         actions: [
           TextButton(
               onPressed: () {
