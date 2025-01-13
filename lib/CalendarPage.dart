@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'DateUtil.dart';
@@ -31,13 +32,21 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme
+            .of(context)
+            .colorScheme
+            .inversePrimary,
         title: const Center(
             child: Padding(
-          padding: EdgeInsets.only(right: 60),
-          child: Text("打卡日历"),
-        )),
+              padding: EdgeInsets.only(right: 60),
+              child: Text("打卡日历"),
+            )),
         actions: [
+          TextButton(
+              onPressed: () {
+                _showDateChoosePickWidget();
+              },
+              child: Text("补卡")),
           TextButton(
               onPressed: () {
                 _selectedDay = DateTime.now();
@@ -57,9 +66,9 @@ class _CalendarPageState extends State<CalendarPage> {
     return TableCalendar(
       calendarStyle: const CalendarStyle(
           markerDecoration: BoxDecoration(
-        color: Colors.green,
-        shape: BoxShape.circle,
-      )),
+            color: Colors.green,
+            shape: BoxShape.circle,
+          )),
       availableCalendarFormats: const {
         CalendarFormat.month: 'Month',
       },
@@ -88,17 +97,17 @@ class _CalendarPageState extends State<CalendarPage> {
     return Expanded(
       child: _showSignData.isEmpty
           ? const Padding(
-              padding: EdgeInsets.only(top: 50),
-              child: Text(
-                "暂无数据",
-                style: TextStyle(color: Colors.grey),
-              ),
-            )
+        padding: EdgeInsets.only(top: 50),
+        child: Text(
+          "暂无数据",
+          style: TextStyle(color: Colors.grey),
+        ),
+      )
           : ListView.builder(
-              itemCount: _showSignData.length,
-              itemBuilder: (context, index) {
-                return _createSignItem(_showSignData[index]);
-              }),
+          itemCount: _showSignData.length,
+          itemBuilder: (context, index) {
+            return _createSignItem(_showSignData[index]);
+          }),
     );
   }
 
@@ -119,9 +128,9 @@ class _CalendarPageState extends State<CalendarPage> {
         ),
         child: Center(
             child: Text(
-          "$timeTag $dateTimeStr",
-          style: TextStyle(fontSize: 20),
-        )),
+              "$timeTag $dateTimeStr",
+              style: TextStyle(fontSize: 20),
+            )),
       ),
     );
   }
@@ -156,5 +165,42 @@ class _CalendarPageState extends State<CalendarPage> {
     if (amSign) showTags.add("");
     if (pmSign) showTags.add("");
     return showTags;
+  }
+
+  _showDateChoosePickWidget() async {
+    DateTime? selectDate = await DatePicker.showDateTimePicker(
+        context,
+        locale: LocaleType.zh,
+    );
+    if (selectDate != null) {
+      _addSignData(dateTime: selectDate);
+    }
+  }
+
+  _addSignData({
+    required DateTime dateTime
+  }) async {
+    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    String dateKey = dateFormat.format(dateTime);
+    DateFormat timeFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
+    String timeStr = timeFormat.format(dateTime);
+    Map<String, List<String>>? dateRecords = await DateUtil.readMapFromFile();
+    List<String> signData;
+    if (dateRecords.containsKey(dateKey)) {
+      signData = dateRecords[dateKey]!;
+    } else {
+      signData = [];
+    }
+    signData.add(timeStr);
+    signData.sort();
+    dateRecords[dateKey] = signData;
+    DateUtil.writeMapToFile(dateRecords).then((value) {
+      DateUtil.readMapFromFile().then((value) {
+        records = value;
+        _selectedDay = dateTime;
+        _refreshShowData(dateTime);
+        setState(() {});
+      });
+    });
   }
 }

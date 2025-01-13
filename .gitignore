@@ -1,0 +1,58 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+ios/build/
+
+# Web related
+lib/generated_plugin_registrant.dart
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+/android/app/build/
+.metadata
+pubspec.lock
+
+dependencies/pdfx-2.0.1+2/example/android/local.properties
+dependencies/pdfx-2.0.1+2/example/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+dependencies/pdfx-2.0.1+2/example/ios/Flutter/flutter_export_environment.sh
+dependencies/pdfx-2.0.1+2/example/ios/Flutter/Generated.xcconfig
+dependencies/pdfx-2.0.1+2/example/ios/Runner/GeneratedPluginRegistrant.h
+dependencies/pdfx-2.0.1+2/example/ios/Runner/GeneratedPluginRegistrant.m
+dependencies/pdfx-2.0.1+2/example/lib/generated_plugin_registrant.dart

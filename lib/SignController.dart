@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -47,6 +48,7 @@ class SignController {
   //读取本地数据
   Future<void> getLocalData() async {
     records = await DateUtil.readMapFromFile();
+    var json = jsonEncode(records);
     DateTime now = DateTime.now();
     DateFormat dateFormat = DateFormat('yyyy-MM-dd');
     String dateKey = dateFormat.format(now);

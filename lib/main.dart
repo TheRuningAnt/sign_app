@@ -126,7 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Text(
             signComplete ? "打卡完成" : "打卡",
             style: TextStyle(
-                color: signComplete ? Colors.cyan : Colors.white,
+                color: signComplete ? Colors.white : Colors.white,
                 fontSize: 40,
                 fontWeight: FontWeight.bold),
           ),
