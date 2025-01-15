@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'AnimatedClickableButton.dart';
 import 'CalendarPage.dart';
 import 'SignController.dart';
 
@@ -112,8 +114,8 @@ class _MyHomePageState extends State<MyHomePage> {
   _createSignBtn() {
     bool signComplete = signController.hadSignAM && signController.hadSignPM;
 
-    return TextButton(
-      onPressed: () {
+    return AnimatedClickableButton(
+      onTap: () {
         signController.sign();
       },
       child: Container(
@@ -137,6 +139,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _pushCalendarPage() {
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => CalendarPage()));
+        context, CupertinoPageRoute(builder: (context) => CalendarPage())).then((value){
+          signController.refreshState();
+    });
   }
 }

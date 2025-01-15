@@ -62,7 +62,7 @@ class SignController {
     DateTime now = DateTime.now();
     int hour = now.hour;
     bool needSign = true;
-    if (hour >= 9 && hour <= 16) {
+    if (hour >= 9 && hour < 18) {
       needSign = await showTip(context);
     }
 
