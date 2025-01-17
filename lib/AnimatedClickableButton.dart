@@ -6,8 +6,7 @@ class AnimatedClickableButton extends StatefulWidget {
   final ValueGetter onTap;
 
   const AnimatedClickableButton(
-      {Key? key, required this.child, required this.onTap})
-      : super(key: key);
+      {super.key, required this.child, required this.onTap});
 
   @override
   State<AnimatedClickableButton> createState() =>

@@ -56,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Center(
             child: Padding(
-          padding: EdgeInsets.only(left: 80),
+          padding:const EdgeInsets.only(left: 80),
           child: Text(widget.title),
         )),
         actions: [
@@ -64,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 _pushCalendarPage();
               },
-              child: Text("打卡日历"))
+              child:const Text("打卡日历"))
         ],
       ),
       body: Column(
@@ -89,16 +89,16 @@ class _MyHomePageState extends State<MyHomePage> {
     String formattedDate = dateFormat.format(now);
     return Center(
         child: Text(formattedDate,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25)));
+            style:const TextStyle(fontWeight: FontWeight.bold, fontSize: 25)));
   }
 
   _createSignItem(String title, bool hadSign) {
     return Row(
       children: [
-        SizedBox(width: 50),
+        const SizedBox(width: 50),
         Text(
           title,
-          style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+          style:const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
         ),
         Text(
           hadSign ? "已打卡" : "未打卡",

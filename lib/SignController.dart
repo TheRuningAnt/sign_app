@@ -16,7 +16,7 @@ class SignController {
   Function refreshAction;
 
   SignController({required this.context, required this.refreshAction}) {
-    Timer.periodic(Duration(seconds: 1), (timer) {
+    Timer.periodic(const Duration(seconds: 1), (timer) {
       refreshAction();
     });
     refreshState();
@@ -90,19 +90,19 @@ class SignController {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("提示"),
-          titleTextStyle: TextStyle(color: Colors.black87, fontSize: 18),
-          content: Text("当前为上班时间，是否要继续打卡?"),
-          contentTextStyle: TextStyle(color: Colors.black54, fontSize: 16),
+          title:const Text("提示"),
+          titleTextStyle:const TextStyle(color: Colors.black87, fontSize: 18),
+          content:const Text("当前为上班时间，是否要继续打卡?"),
+          contentTextStyle:const TextStyle(color: Colors.black54, fontSize: 16),
           actions: <Widget>[
             TextButton(
-              child: Text("取消", style: TextStyle(fontSize: 15)),
+              child:const Text("取消", style: TextStyle(fontSize: 15)),
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
             ),
             TextButton(
-              child: Text("确定", style: TextStyle(fontSize: 15)),
+              child:const Text("确定", style: TextStyle(fontSize: 15)),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },

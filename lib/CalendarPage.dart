@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'Config.dart';
 import 'DateUtil.dart';
 
 class CalendarPage extends StatefulWidget {
@@ -15,14 +17,14 @@ class CalendarPage extends StatefulWidget {
 class _CalendarPageState extends State<CalendarPage> {
   DateTime _selectedDay = DateTime.now();
   List<String> _showSignData = [];
-  Map<String, List<String>> records = {};
+  Map<String, List<String>> allRecords = {};
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     DateUtil.readMapFromFile().then((value) {
-      records = value;
+      allRecords = value;
       _refreshShowData(DateTime.now());
       setState(() {});
     });
@@ -32,39 +34,43 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme
-            .of(context)
-            .colorScheme
-            .inversePrimary,
-        title: Text("打卡日历"),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text("打卡日历"),
         actions: [
           TextButton(
               onPressed: () {
                 _showDateChoosePickWidget();
               },
-              child: Text("补卡")),
+              child: const Text("补卡")),
           TextButton(
               onPressed: () {
                 _selectedDay = DateTime.now();
                 _refreshShowData(DateTime.now());
                 setState(() {});
               },
-              child: Text("今天"))
+              child: const Text("今天"))
         ],
       ),
       body: Column(
         children: [_createCalendar(), _createSignView()],
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 
+  //创建日历组件
   _createCalendar() {
     return TableCalendar(
+      daysOfWeekStyle:
+          DaysOfWeekStyle(weekendStyle: TextStyle(color: Colors.cyan,fontWeight: FontWeight.bold),weekdayStyle: TextStyle(fontWeight: FontWeight.bold)),
+      calendarBuilders: CalendarBuilders(
+          markerBuilder: (BuildContext context, DateTime day, List events) {
+        return _createSignTip(day, events);
+      }),
       calendarStyle: const CalendarStyle(
           markerDecoration: BoxDecoration(
-            color: Colors.green,
-            shape: BoxShape.circle,
-          )),
+        color: Colors.green,
+        shape: BoxShape.circle,
+      )),
       availableCalendarFormats: const {
         CalendarFormat.month: 'Month',
       },
@@ -82,6 +88,9 @@ class _CalendarPageState extends State<CalendarPage> {
       eventLoader: (day) {
         return _refreshDayTags(day);
       },
+      holidayPredicate: (DateTime dateTime) {
+        return _isHoliday(dateTime);
+      },
       onPageChanged: (selectedDay) {
         _selectedDay = selectedDay;
         _refreshShowData(selectedDay);
@@ -89,24 +98,26 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
+  //创建签到列表
   _createSignView() {
     return Expanded(
       child: _showSignData.isEmpty
           ? const Padding(
-        padding: EdgeInsets.only(top: 50),
-        child: Text(
-          "暂无数据",
-          style: TextStyle(color: Colors.grey),
-        ),
-      )
+              padding: EdgeInsets.only(top: 50),
+              child: Text(
+                "暂无数据",
+                style: TextStyle(color: Colors.grey),
+              ),
+            )
           : ListView.builder(
-          itemCount: _showSignData.length,
-          itemBuilder: (context, index) {
-            return _createSignItem(_showSignData[index]);
-          }),
+              itemCount: _showSignData.length,
+              itemBuilder: (context, index) {
+                return _createSignItem(_showSignData[index]);
+              }),
     );
   }
 
+  //创建签到列表item
   _createSignItem(String dateTimeStr) {
     DateTime dateTime = DateTime.parse(dateTimeStr);
     int hour = dateTime.hour;
@@ -124,18 +135,19 @@ class _CalendarPageState extends State<CalendarPage> {
         ),
         child: Center(
             child: Text(
-              "$timeTag $dateTimeStr",
-              style: TextStyle(fontSize: 20),
-            )),
+          "$timeTag $dateTimeStr",
+          style: const TextStyle(fontSize: 20),
+        )),
       ),
     );
   }
 
+  //刷新展示数据
   _refreshShowData(DateTime day) {
     DateFormat dateFormat = DateFormat('yyyy-MM-dd');
     String dateKey = dateFormat.format(day);
-    if (records.isNotEmpty && records.containsKey(dateKey)) {
-      _showSignData = records[dateKey]!;
+    if (allRecords.isNotEmpty && allRecords.containsKey(dateKey)) {
+      _showSignData = allRecords[dateKey]!;
     } else {
       _showSignData = [];
     }
@@ -143,6 +155,7 @@ class _CalendarPageState extends State<CalendarPage> {
     return _showSignData;
   }
 
+  //刷新活动提示
   _refreshDayTags(DateTime day) {
     DateFormat dateFormat = DateFormat('yyyy-MM-dd');
     String dateKey = dateFormat.format(day);
@@ -150,8 +163,8 @@ class _CalendarPageState extends State<CalendarPage> {
     bool amSign = false;
     bool pmSign = false;
 
-    if (records.isNotEmpty && records.containsKey(dateKey)) {
-      records[dateKey]!.forEach((dateTimeStr) {
+    if (allRecords.isNotEmpty && allRecords.containsKey(dateKey)) {
+      allRecords[dateKey]!.forEach((dateTimeStr) {
         DateTime dateTime = DateTime.parse(dateTimeStr);
         int hour = dateTime.hour;
         if (hour < 12) amSign = true;
@@ -163,19 +176,19 @@ class _CalendarPageState extends State<CalendarPage> {
     return showTags;
   }
 
+  //展示补卡日期选择
   _showDateChoosePickWidget() async {
     DateTime? selectDate = await DatePicker.showDateTimePicker(
-        context,
-        locale: LocaleType.zh,
+      context,
+      locale: LocaleType.zh,
     );
     if (selectDate != null) {
       _addSignData(dateTime: selectDate);
     }
   }
 
-  _addSignData({
-    required DateTime dateTime
-  }) async {
+  //补卡增加数据
+  _addSignData({required DateTime dateTime}) async {
     DateFormat dateFormat = DateFormat('yyyy-MM-dd');
     String dateKey = dateFormat.format(dateTime);
     DateFormat timeFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
@@ -192,11 +205,136 @@ class _CalendarPageState extends State<CalendarPage> {
     dateRecords[dateKey] = signData;
     DateUtil.writeMapToFile(dateRecords).then((value) {
       DateUtil.readMapFromFile().then((value) {
-        records = value;
+        allRecords = value;
         _selectedDay = dateTime;
         _refreshShowData(dateTime);
         setState(() {});
       });
     });
+  }
+
+  //创建签到提示数据
+  Widget _createSignTip(DateTime day, List events) {
+    List<Widget> tipsWidget = [];
+    bool isWorkDay = _isWorkDay(day);
+    List<String> signRecords = _getSignRecord(day);
+
+    DateTime nowTime = DateTime.now();
+    DateTime startOfDay =
+        DateTime(nowTime.year, nowTime.month, nowTime.day, 23, 59, 59, 999);
+    //过滤掉今天之后的日期
+    if (day.isAfter(startOfDay)) {
+      return const SizedBox();
+    }
+
+    if (isWorkDay) {
+      if (signRecords.isEmpty) {
+        tipsWidget.add(_createSignTipItem(Sign_Type.Lose_Sign));
+        tipsWidget.add(_createSignTipItem(Sign_Type.Lose_Sign));
+      } else if (signRecords.length == 1) {
+        if (signRecords.contains("am")) {
+          tipsWidget.add(_createSignTipItem(Sign_Type.Had_Sign));
+        } else {
+          if (day.day == nowTime.day && nowTime.hour < 12) {
+            tipsWidget.add(_createSignTipItem(Sign_Type.Wait_Sign));
+          } else {
+            tipsWidget.add(_createSignTipItem(Sign_Type.Lose_Sign));
+          }
+        }
+
+        if (signRecords.contains("pm")) {
+          tipsWidget.add(_createSignTipItem(Sign_Type.Had_Sign));
+        } else {
+          if (day.day == nowTime.day) {
+            tipsWidget.add(_createSignTipItem(Sign_Type.Wait_Sign));
+          } else {
+            tipsWidget.add(_createSignTipItem(Sign_Type.Lose_Sign));
+          }
+        }
+      } else if (signRecords.length == 2) {
+        tipsWidget.add(_createSignTipItem(Sign_Type.Had_Sign));
+        tipsWidget.add(_createSignTipItem(Sign_Type.Had_Sign));
+      }
+    } else {
+      if (signRecords.length == 1) {
+        tipsWidget.add(_createSignTipItem(Sign_Type.Had_Sign));
+      } else if (signRecords.length == 2) {
+        tipsWidget.add(_createSignTipItem(Sign_Type.Had_Sign));
+        tipsWidget.add(_createSignTipItem(Sign_Type.Had_Sign));
+      }
+    }
+
+    return SizedBox(
+      width: 20,
+      height: 10,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: tipsWidget,
+      ),
+    );
+  }
+
+  //判断当天是否需要上班
+  bool _isWorkDay(DateTime day) {
+    bool needWork = false;
+    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    String dateKey = dateFormat.format(day);
+    if (Holiday_Config.contains(dateKey)) {
+      needWork = false;
+    } else if (Other_Work_Day_Config.contains(dateKey)) {
+      needWork = true;
+    } else if (day.weekday == 6 || day.weekday == 7) {
+      needWork = false;
+    } else {
+      needWork = true;
+    }
+    return needWork;
+  }
+
+  //获取当天的签到记录
+  List<String> _getSignRecord(DateTime day) {
+    List<String> records = [];
+    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    String dateKey = dateFormat.format(day);
+
+    if (allRecords.containsKey(dateKey)) {
+      List<String> dayRecords = allRecords[dateKey]!;
+      for (var dateTimeStr in dayRecords) {
+        DateTime dateTime = DateTime.parse(dateTimeStr);
+        int hour = dateTime.hour;
+        if (hour < 12 && !records.contains("am")) records.add("am");
+        if (hour > 12 && !records.contains("pm")) records.add("pm");
+      }
+    }
+    return records;
+  }
+
+  //创建签到提示小圆点
+  Widget _createSignTipItem(Sign_Type signType) {
+    Color itemColor;
+    switch (signType) {
+      case Sign_Type.Wait_Sign:
+        itemColor = Wait_Sign_Color;
+      case Sign_Type.Had_Sign:
+        itemColor = Had_Sign_Color;
+      case Sign_Type.Lose_Sign:
+        itemColor = Lose_Sign_Color;
+      default:
+        itemColor = Colors.cyan;
+    }
+
+    return Container(
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(
+          color: itemColor, borderRadius: BorderRadius.circular(4)),
+    );
+  }
+
+  //判断是否是假期
+  bool _isHoliday(DateTime dateTime) {
+    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    String dateKey = dateFormat.format(dateTime);
+    return Holiday_Config.contains(dateKey);
   }
 }
