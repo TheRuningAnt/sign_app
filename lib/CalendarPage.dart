@@ -85,9 +85,7 @@ class _CalendarPageState extends State<CalendarPage> {
         _selectedDay = selectedDay;
         _refreshShowData(selectedDay);
       },
-      eventLoader: (day) {
-        return _refreshDayTags(day);
-      },
+
       holidayPredicate: (DateTime dateTime) {
         return _isHoliday(dateTime);
       },
@@ -155,27 +153,6 @@ class _CalendarPageState extends State<CalendarPage> {
     return _showSignData;
   }
 
-  //刷新活动提示
-  _refreshDayTags(DateTime day) {
-    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
-    String dateKey = dateFormat.format(day);
-    List showTags = [];
-    bool amSign = false;
-    bool pmSign = false;
-
-    if (allRecords.isNotEmpty && allRecords.containsKey(dateKey)) {
-      allRecords[dateKey]!.forEach((dateTimeStr) {
-        DateTime dateTime = DateTime.parse(dateTimeStr);
-        int hour = dateTime.hour;
-        if (hour < 12) amSign = true;
-        if (hour > 12) pmSign = true;
-      });
-    }
-    if (amSign) showTags.add("");
-    if (pmSign) showTags.add("");
-    return showTags;
-  }
-
   //展示补卡日期选择
   _showDateChoosePickWidget() async {
     DateTime? selectDate = await DatePicker.showDateTimePicker(
@@ -224,6 +201,22 @@ class _CalendarPageState extends State<CalendarPage> {
         DateTime(nowTime.year, nowTime.month, nowTime.day, 23, 59, 59, 999);
     //过滤掉今天之后的日期
     if (day.isAfter(startOfDay)) {
+      //判断是不是调休
+      DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+      String dateKey = dateFormat.format(day);
+      bool isOtherWorkDay = false;
+      if (Other_Work_Day_Config.contains(dateKey)) {
+        isOtherWorkDay = true;
+      }
+      if(isOtherWorkDay){
+        return const Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text("班",style: TextStyle(color: Colors.red,fontSize: 8)),
+            SizedBox(height: 5,)
+          ],
+        );
+      }
       return const SizedBox();
     }
 
@@ -264,14 +257,39 @@ class _CalendarPageState extends State<CalendarPage> {
       }
     }
 
-    return SizedBox(
-      width: 20,
-      height: 10,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: tipsWidget,
-      ),
-    );
+    //判断是不是调休
+    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    String dateKey = dateFormat.format(day);
+    bool isOtherWorkDay = false;
+    if (Other_Work_Day_Config.contains(dateKey)) {
+        isOtherWorkDay = true;
+    }
+    if(isOtherWorkDay){
+      return SizedBox(
+        width: 20,
+        height: 20,
+        child: Column(
+          children: [
+            const Text("班",style: TextStyle(color: Colors.red,fontSize: 8)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: tipsWidget,
+            ),
+          ],
+        ),
+      );
+    }else{
+      return SizedBox(
+        width: 20,
+        height: 10,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: tipsWidget,
+        ),
+      );
+    }
+
+
   }
 
   //判断当天是否需要上班

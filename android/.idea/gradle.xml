@@ -19,6 +19,7 @@
         <option name="gradleJvm" value="corretto-11" />
         <option name="modules">
           <set>
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.2.4/android" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$USER_HOME$/Library/flutter/packages/flutter_tools/gradle" />
