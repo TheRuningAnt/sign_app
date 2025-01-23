@@ -17,16 +17,20 @@ class CalendarPage extends StatefulWidget {
 class _CalendarPageState extends State<CalendarPage> {
   DateTime _selectedDay = DateTime.now();
   List<String> _showSignData = [];
-  Map<String, List<String>> allRecords = {};
+  Map<String, List<String>> _allRecords = {};  //所有打卡记录
+  Map<String, List<String>> _restRecords = {};  //所有调休记录
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     DateUtil.readMapFromFile().then((value) {
-      allRecords = value;
-      _refreshShowData(DateTime.now());
-      setState(() {});
+      _allRecords = value;
+      DateUtil.readRestMapFromFile().then((value) {
+        _restRecords = value;
+        _refreshShowData(DateTime.now());
+        setState(() {});
+      });
     });
   }
 
@@ -37,22 +41,33 @@ class _CalendarPageState extends State<CalendarPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text("打卡日历"),
         actions: [
-          TextButton(
-              onPressed: () {
-                _showDateChoosePickWidget();
-              },
-              child: const Text("补卡")),
-          TextButton(
-              onPressed: () {
-                _selectedDay = DateTime.now();
-                _refreshShowData(DateTime.now());
-                setState(() {});
-              },
-              child: const Text("今天"))
+          _createActonBtn("补卡",(){
+            _showDateChoosePickWidget();
+          }),
+          _createActonBtn("调休",(){
+            _showRestDateChoosePickWidget();
+          }),
+          _createActonBtn("今天",(){
+            _selectedDay = DateTime.now();
+            _refreshShowData(DateTime.now());
+            setState(() {});
+          })
         ],
       ),
       body: Column(
         children: [_createCalendar(), _createSignView()],
+      ),
+    );
+  }
+
+  Widget _createActonBtn(String title,Function action){
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: GestureDetector(
+        onTap:(){
+          action();
+        },
+        child: Text(title,style: TextStyle(color: Colors.deepPurple),)
       ),
     );
   }
@@ -144,8 +159,8 @@ class _CalendarPageState extends State<CalendarPage> {
   _refreshShowData(DateTime day) {
     DateFormat dateFormat = DateFormat('yyyy-MM-dd');
     String dateKey = dateFormat.format(day);
-    if (allRecords.isNotEmpty && allRecords.containsKey(dateKey)) {
-      _showSignData = allRecords[dateKey]!;
+    if (_allRecords.isNotEmpty && _allRecords.containsKey(dateKey)) {
+      _showSignData = _allRecords[dateKey]!;
     } else {
       _showSignData = [];
     }
@@ -182,7 +197,44 @@ class _CalendarPageState extends State<CalendarPage> {
     dateRecords[dateKey] = signData;
     DateUtil.writeMapToFile(dateRecords).then((value) {
       DateUtil.readMapFromFile().then((value) {
-        allRecords = value;
+        _allRecords = value;
+        _selectedDay = dateTime;
+        _refreshShowData(dateTime);
+        setState(() {});
+      });
+    });
+  }
+
+  //展示调休日期选择
+  _showRestDateChoosePickWidget() async {
+    DateTime? selectDate = await DatePicker.showDateTimePicker(
+      context,
+      locale: LocaleType.zh,
+    );
+    if (selectDate != null) {
+      _addRestData(dateTime: selectDate);
+    }
+  }
+
+  //调休增加数据
+  _addRestData({required DateTime dateTime}) async {
+    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    String dateKey = dateFormat.format(dateTime);
+    DateFormat timeFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
+    String timeStr = timeFormat.format(dateTime);
+    Map<String, List<String>>? restDateRecords = await DateUtil.readRestMapFromFile();
+    List<String> restData;
+    if (restDateRecords.containsKey(dateKey)) {
+      restData = restDateRecords[dateKey]!;
+    } else {
+      restData = [];
+    }
+    restData.add(timeStr);
+    restData.sort();
+    restDateRecords[dateKey] = restData;
+    DateUtil.writeRestMapToFile(restDateRecords).then((value) {
+      DateUtil.readRestMapFromFile().then((value) {
+        _restRecords = value;
         _selectedDay = dateTime;
         _refreshShowData(dateTime);
         setState(() {});
@@ -199,11 +251,24 @@ class _CalendarPageState extends State<CalendarPage> {
     DateTime nowTime = DateTime.now();
     DateTime startOfDay =
         DateTime(nowTime.year, nowTime.month, nowTime.day, 23, 59, 59, 999);
+
+    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    String dateKey = dateFormat.format(day);
+
+    //判断是不是调休
+    if(_restRecords.containsKey(dateKey)){
+      return const Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text("休",style: TextStyle(color: Colors.deepPurple,fontSize: 8,fontWeight: FontWeight.bold)),
+          SizedBox(height: 5,)
+        ],
+      );
+    }
+
     //过滤掉今天之后的日期
     if (day.isAfter(startOfDay)) {
-      //判断是不是调休
-      DateFormat dateFormat = DateFormat('yyyy-MM-dd');
-      String dateKey = dateFormat.format(day);
+      //判断是不是调班
       bool isOtherWorkDay = false;
       if (Other_Work_Day_Config.contains(dateKey)) {
         isOtherWorkDay = true;
@@ -212,7 +277,7 @@ class _CalendarPageState extends State<CalendarPage> {
         return const Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Text("班",style: TextStyle(color: Colors.red,fontSize: 8)),
+            Text("班",style: TextStyle(color: Colors.red,fontSize: 8,fontWeight: FontWeight.bold)),
             SizedBox(height: 5,)
           ],
         );
@@ -257,9 +322,7 @@ class _CalendarPageState extends State<CalendarPage> {
       }
     }
 
-    //判断是不是调休
-    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
-    String dateKey = dateFormat.format(day);
+    //判断是不是调班
     bool isOtherWorkDay = false;
     if (Other_Work_Day_Config.contains(dateKey)) {
         isOtherWorkDay = true;
@@ -315,8 +378,8 @@ class _CalendarPageState extends State<CalendarPage> {
     DateFormat dateFormat = DateFormat('yyyy-MM-dd');
     String dateKey = dateFormat.format(day);
 
-    if (allRecords.containsKey(dateKey)) {
-      List<String> dayRecords = allRecords[dateKey]!;
+    if (_allRecords.containsKey(dateKey)) {
+      List<String> dayRecords = _allRecords[dateKey]!;
       for (var dateTimeStr in dayRecords) {
         DateTime dateTime = DateTime.parse(dateTimeStr);
         int hour = dateTime.hour;

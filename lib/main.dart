@@ -67,7 +67,9 @@ class _MyHomePageState extends State<MyHomePage> {
               child:const Text("打卡日历"))
         ],
       ),
-      body: Column(
+      body:signController.isRest?Container(
+        child: Center(child: Text("今日调休",style: TextStyle(fontSize: 20),),),
+      ):Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
           const SizedBox(height: 30),

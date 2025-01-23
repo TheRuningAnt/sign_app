@@ -7,10 +7,13 @@ import 'package:intl/intl.dart';
 import 'DateUtil.dart';
 
 class SignController {
-  Map<String, List<String>> records = {};
+  Map<String, List<String>> _records = {}; //所有打卡记录
+  Map<String, List<String>> _restRecords = {};  //所有调休记录
+
   List<String> todayRecords = [];
   bool hadSignAM = false;
   bool hadSignPM = false;
+  bool isRest = false; //是否是调休
   BuildContext context;
 
   Function refreshAction;
@@ -28,8 +31,16 @@ class SignController {
       DateTime now = DateTime.now();
       DateFormat dateFormat = DateFormat('yyyy-MM-dd');
       String dateKey = dateFormat.format(now);
-      if (records.isNotEmpty && records.containsKey(dateKey)) {
-        todayRecords = records[dateKey]!;
+
+      //判断是否是调休
+      if (_restRecords.isNotEmpty && _restRecords.containsKey(dateKey)) {
+        isRest = true;
+        refreshAction();
+        return;
+      }
+
+      if (_records.isNotEmpty && _records.containsKey(dateKey)) {
+        todayRecords = _records[dateKey]!;
       }
 
       if (todayRecords.isNotEmpty) {
@@ -47,13 +58,13 @@ class SignController {
 
   //读取本地数据
   Future<void> getLocalData() async {
-    records = await DateUtil.readMapFromFile();
-    var json = jsonEncode(records);
+    _records = await DateUtil.readMapFromFile();
+    _restRecords = await DateUtil.readRestMapFromFile();
     DateTime now = DateTime.now();
     DateFormat dateFormat = DateFormat('yyyy-MM-dd');
     String dateKey = dateFormat.format(now);
-    if (records.isNotEmpty && records.containsKey(dateKey)) {
-      todayRecords = records[dateKey]!;
+    if (_records.isNotEmpty && _records.containsKey(dateKey)) {
+      todayRecords = _records[dateKey]!;
     }
   }
 
@@ -79,8 +90,8 @@ class SignController {
     DateFormat timeFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
     String timeStr = timeFormat.format(now);
     todayRecords.add(timeStr);
-    records[dateKey] = todayRecords;
-    DateUtil.writeMapToFile(records).then((value) {
+    _records[dateKey] = todayRecords;
+    DateUtil.writeMapToFile(_records).then((value) {
       refreshState();
     });
   }
