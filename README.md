@@ -23,7 +23,9 @@
 ###     1.增加手动添加调休功能
 ### 
 
-### 2025-3-7 更新：增加长按删除日历记录功能
+### 2025-3-7 更新：
+###     1.增加长按删除日历记录功能
+
 
 ![iwEcAqNqcGcDAQTRAk4F0QT-BrAIAemYG2KAXgdmZnExOQUAB9MAAAABB7EnYAgACaJpbQoAC9IAAIen jpg_720x720q90](https://github.com/user-attachments/assets/766433ba-dfcf-4fd8-8512-b28a7fa47987)
 ![iwEcAqNqcGcDAQTRAk4F0QT-BrBLN4QHhcHc7Qd11p0rlAwAB9MAAAABB7EnYAgACaJpbQoAC9IAALcU jpg_720x720q90](https://github.com/user-attachments/assets/8b59a9b0-da94-4720-83c2-41bb280540e6)
