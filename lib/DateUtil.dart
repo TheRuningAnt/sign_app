@@ -12,9 +12,14 @@ class DateUtil{
       await recordDirectory.create();
     }
 
+    File file = File(filePath);
+    if(file.existsSync()){
+      file.deleteSync();
+    }
+
     final jsonData = json.encode(data);
-    final file = File(filePath);
-    await file.writeAsString(jsonData);
+    final newFile = File(filePath);
+    await newFile.writeAsString(jsonData);
   }
 
   //读取打卡数据
@@ -38,10 +43,14 @@ class DateUtil{
     if (!await recordDirectory.exists()) {
       await recordDirectory.create();
     }
+    File file = File(filePath);
+    if(file.existsSync()){
+      file.deleteSync();
+    }
 
     final jsonData = json.encode(data);
-    final file = File(filePath);
-    await file.writeAsString(jsonData);
+    final newFile = File(filePath);
+    await newFile.writeAsString(jsonData);
   }
 
   //读取调休数据
