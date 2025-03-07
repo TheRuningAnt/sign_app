@@ -131,28 +131,67 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   //创建签到列表item
-  _createSignItem(String dateTimeStr) {
+  _createSignItem(String dateTimeStr){
     DateTime dateTime = DateTime.parse(dateTimeStr);
     int hour = dateTime.hour;
     String timeTag = "上午";
     if (hour > 12) timeTag = "下午";
 
-    return Padding(
-      padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-      child: Container(
-        height: 50,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-              color: hour > 12 ? Colors.cyan : Colors.pinkAccent, width: 2),
+    return GestureDetector(
+      onLongPress: () async {
+        bool result = await showDeleteTip(context);
+        if(result){
+          //删除该条数据
+          _deleteData(dateTime: dateTime);
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+        child: Container(
+          height: 50,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+                color: hour > 12 ? Colors.cyan : Colors.pinkAccent, width: 2),
+          ),
+          child: Center(
+              child: Text(
+            "$timeTag $dateTimeStr",
+            style: const TextStyle(fontSize: 20),
+          )),
         ),
-        child: Center(
-            child: Text(
-          "$timeTag $dateTimeStr",
-          style: const TextStyle(fontSize: 20),
-        )),
       ),
     );
+  }
+
+  Future<bool> showDeleteTip(BuildContext context) async {
+    bool? isSelect = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title:const Text("提示"),
+          titleTextStyle:const TextStyle(color: Colors.black87, fontSize: 18),
+          content:const Text("是否要删除该条数据?"),
+          contentTextStyle:const TextStyle(color: Colors.black54, fontSize: 16),
+          actions: <Widget>[
+            TextButton(
+              child:const Text("取消", style: TextStyle(fontSize: 15)),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child:const Text("确定", style: TextStyle(fontSize: 15)),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    return isSelect ?? false;
   }
 
   //刷新展示数据
@@ -160,12 +199,43 @@ class _CalendarPageState extends State<CalendarPage> {
     DateFormat dateFormat = DateFormat('yyyy-MM-dd');
     String dateKey = dateFormat.format(day);
     if (_allRecords.isNotEmpty && _allRecords.containsKey(dateKey)) {
-      _showSignData = _allRecords[dateKey]!;
+      List localDayRecords =  _allRecords[dateKey]!;
+      _showSignData.clear();
+      localDayRecords.forEach((element) {
+        DateTime dateTime = DateTime.parse(element);
+        String localDateKey = dateFormat.format(dateTime);
+        if(localDateKey == dateKey)_showSignData.add(element);
+      });
     } else {
       _showSignData = [];
     }
     setState(() {});
     return _showSignData;
+  }
+
+  void _deleteData({required DateTime dateTime}) async {
+    DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    String dateKey = dateFormat.format(dateTime);
+    DateFormat timeFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
+    String timeStr = timeFormat.format(dateTime);
+    Map<String, List<String>>? dateRecords = await DateUtil.readMapFromFile();
+    List<String> signData;
+    if (dateRecords.containsKey(dateKey)) {
+      signData = dateRecords[dateKey]!;
+    } else {
+      signData = [];
+    }
+    if(signData.contains(timeStr))signData.remove(timeStr);
+    signData.sort();
+    dateRecords[dateKey] = signData;
+    DateUtil.writeMapToFile(dateRecords).then((value) {
+      DateUtil.readMapFromFile().then((value) {
+        _allRecords = value;
+        _selectedDay = dateTime;
+        _refreshShowData(dateTime);
+        setState(() {});
+      });
+    });
   }
 
   //展示补卡日期选择
@@ -382,9 +452,11 @@ class _CalendarPageState extends State<CalendarPage> {
       List<String> dayRecords = _allRecords[dateKey]!;
       for (var dateTimeStr in dayRecords) {
         DateTime dateTime = DateTime.parse(dateTimeStr);
+        String localDateKey = dateFormat.format(dateTime);
+
         int hour = dateTime.hour;
-        if (hour < 12 && !records.contains("am")) records.add("am");
-        if (hour > 12 && !records.contains("pm")) records.add("pm");
+        if (hour < 12 && !records.contains("am") && dateKey == localDateKey) records.add("am");
+        if (hour > 12 && !records.contains("pm") && dateKey == localDateKey) records.add("pm");
       }
     }
     return records;

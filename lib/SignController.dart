@@ -46,9 +46,11 @@ class SignController {
       if (todayRecords.isNotEmpty) {
         todayRecords.forEach((dateTimeStr) {
           DateTime dateTime = DateTime.parse(dateTimeStr);
+          String localDateKey = dateFormat.format(dateTime);
+
           int hour = dateTime.hour;
-          if (hour > 6 && hour < 12) hadSignAM = true;
-          if (hour > 12 && hour < 24) hadSignPM = true;
+          if (hour > 6 && hour < 12 && localDateKey == dateKey) hadSignAM = true;
+          if (hour > 12 && hour < 24 && localDateKey == dateKey) hadSignPM = true;
         });
       }
 
