@@ -357,8 +357,13 @@ class _CalendarPageState extends State<CalendarPage> {
 
     if (isWorkDay) {
       if (signRecords.isEmpty) {
-        tipsWidget.add(_createSignTipItem(Sign_Type.Lose_Sign));
-        tipsWidget.add(_createSignTipItem(Sign_Type.Lose_Sign));
+        if(nowTime.hour < 9){
+          tipsWidget.add(_createSignTipItem(Sign_Type.Wait_Sign));
+          tipsWidget.add(_createSignTipItem(Sign_Type.Wait_Sign));
+        }else{
+          tipsWidget.add(_createSignTipItem(Sign_Type.Lose_Sign));
+          tipsWidget.add(_createSignTipItem(Sign_Type.Lose_Sign));
+        }
       } else if (signRecords.length == 1) {
         if (signRecords.contains("am")) {
           tipsWidget.add(_createSignTipItem(Sign_Type.Had_Sign));
